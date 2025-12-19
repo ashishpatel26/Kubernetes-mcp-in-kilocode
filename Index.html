@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes MCP Setup Guide</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+            overflow-x: hidden;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00d4ff, #090979);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.8;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+        }
+
+        h2 {
+            color: #00d4ff;
+            border-bottom: 2px solid #00d4ff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        h3 {
+            color: #ff6b6b;
+            margin: 20px 0 10px 0;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        pre {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .note {
+            background: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .highlight {
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div class="container">
+        <header>
+            <h1>Setting Up Kubernetes MCP Server in KiloCode</h1>
+            <p class="subtitle">This guide provides step-by-step instructions to set up a local Kubernetes MCP server in your KiloCode workspace, allowing you to manage your Kubernetes cluster through AI-assisted commands.</p>
+        </header>
+
+        <section class="section">
+            <h2>Prerequisites</h2>
+            <ul>
+                <li>Node.js and npm installed</li>
+                <li>Access to npm registry (may require IT approval for @modelcontextprotocol/sdk)</li>
+                <li>kubectl configured and connected to your Kubernetes cluster</li>
+                <li>KiloCode workspace</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>Step 1: Create the MCP Server Directory Structure</h2>
+            <pre><code class="language-bash">mkdir -p mcp/kubernetes-server/src</code></pre>
+        </section>
+
+        <section class="section">
+            <h2>Step 2: Create package.json</h2>
+            <p>Create <code>mcp/kubernetes-server/package.json</code> with the following content:</p>
+            <pre><code class="language-json">{
+  "name": "kubernetes-server",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && chmod +x build/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.4.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}</code></pre>
+        </section>
+
+        <section class="section">
+            <h2>Step 3: Create tsconfig.json</h2>
+            <p>Create <code>mcp/kubernetes-server/tsconfig.json</code> with the following content:</p>
+            <pre><code class="language-json">{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "outDir": "./build",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "build"]
+}</code></pre>
+        </section>
+
+        <section class="section">
+            <h2>Step 4: Create the Server Implementation</h2>
+            <p>Create <code>mcp/kubernetes-server/src/index.ts</code> with the following content:</p>
+            <pre><code class="language-typescript">#!/usr/bin/env node
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
+import { execSync } from "child_process";
+
+// Create an MCP server
+const server = new McpServer({
+  name: "kubernetes-server",
+  version: "0.1.0"
+});
+
+// Tool for getting pods
+server.tool(
+  "get_pods",
+  {
+    namespace: z.string().optional().describe("Namespace to list pods from"),
+    selector: z.string().optional().describe("Label selector"),
+    output: z.string().optional().describe("Output format (json, yaml, wide, etc.)")
+  },
+  async ({ namespace, selector, output = "wide" }) => {
+    try {
+      let cmd = `kubectl get pods`;
+      if (namespace) cmd += ` -n ${namespace}`;
+      if (selector) cmd += ` -l ${selector}`;
+      cmd += ` -o ${output}`;
+      const result = execSync(cmd, { encoding: 'utf8' });
+      return {
+        content: [{ type: "text", text: result }]
+      };
+    } catch (error: any) {
+      return {
+        content: [{ type: "text", text: `Error: ${error.message}` }],
+        isError: true
+      };
+    }
+  }
+);
+
+// Tool for describing a pod
+server.tool(
+  "describe_pod",
+  {
+    name: z.string().describe("Pod name"),
+    namespace: z.string().optional().describe("Namespace")
+  },
+  async ({ name, namespace }) => {
+    try {
+      let cmd = `kubectl describe pod ${name}`;
+      if (namespace) cmd += ` -n ${namespace}`;
+      const result = execSync(cmd, { encoding: 'utf8' });
+      return {
+        content: [{ type: "text", text: result }]
+      };
+    } catch (error: any) {
+      return {
+        content: [{ type: "text", text: `Error: ${error.message}` }],
+        isError: true
+      };
+    }
+  }
+);
+
+// Tool for getting logs
+server.tool(
+  "logs",
+  {
+    name: z.string().describe("Pod name"),
+    namespace: z.string().optional().describe("Namespace"),
+    container: z.string().optional().describe("Container name"),
+    tail: z.number().optional().describe("Number of lines to tail")
+  },
+  async ({ name, namespace, container, tail }) => {
+    try {
+      let cmd = `kubectl logs ${name}`;
+      if (namespace) cmd += ` -n ${namespace}`;
+      if (container) cmd += ` -c ${container}`;
+      if (tail) cmd += ` --tail=${tail}`;
+      const result = execSync(cmd, { encoding: 'utf8' });
+      return {
+        content: [{ type: "text", text: result }]
+      };
+    } catch (error: any) {
+      return {
+        content: [{ type: "text", text: `Error: ${error.message}` }],
+        isError: true
+      };
+    }
+  }
+);
+
+// Tool for getting services
+server.tool(
+  "get_services",
+  {
+    namespace: z.string().optional().describe("Namespace"),
+    output: z.string().optional().describe("Output format")
+  },
+  async ({ namespace, output = "wide" }) => {
+    try {
+      let cmd = `kubectl get services`;
+      if (namespace) cmd += ` -n ${namespace}`;
+      cmd += ` -o ${output}`;
+      const result = execSync(cmd, { encoding: 'utf8' });
+      return {
+        content: [{ type: "text", text: result }]
+      };
+    } catch (error: any) {
+      return {
+        content: [{ type: "text", text: `Error: ${error.message}` }],
+        isError: true
+      };
+    }
+  }
+);
+
+// Start the server
+const transport = new StdioServerTransport();
+await server.connect(transport);
+console.error('Kubernetes MCP server running on stdio');</code></pre>
+        </section>
+
+        <section class="section">
+            <h2>Step 5: Install Dependencies</h2>
+            <p>Navigate to the server directory and install dependencies:</p>
+            <pre><code class="language-bash">cd mcp/kubernetes-server
+npm install</code></pre>
+            <div class="note">
+                <strong>Note:</strong> If you encounter a 403 error, contact your IT administrator to allow access to the @modelcontextprotocol/sdk package on npmjs.org.
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Step 6: Build the Server</h2>
+            <p>Compile the TypeScript code:</p>
+            <pre><code class="language-bash">npm run build</code></pre>
+        </section>
+
+        <section class="section">
+            <h2>Step 7: Configure KiloCode MCP Settings</h2>
+            <p>Update <code>.kilocode/mcp.json</code> in your workspace root to include the local server:</p>
+            <pre><code class="language-json">{
+  "mcpServers": {
+    "kubernetes-mcp-server": {
+      "command": "node",
+      "args": ["mcp/kubernetes-server/build/index.js"]
+    }
+  }
+}</code></pre>
+        </section>
+
+        <section class="section">
+            <h2>Step 8: Verify Setup</h2>
+            <p>Restart KiloCode or reload the window to load the new MCP server. You can now use commands like:</p>
+            <ul>
+                <li>"Get all pods in the advisor namespace"</li>
+                <li>"Describe the advisor-service pod"</li>
+                <li>"Show logs for a specific pod"</li>
+                <li>"List services in the cluster"</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>Troubleshooting</h2>
+            <ul>
+                <li><strong>403 npm error:</strong> Security policy blocking package access</li>
+                <li><strong>Build fails:</strong> Ensure TypeScript and dependencies are installed</li>
+                <li><strong>MCP not loading:</strong> Check the .kilocode/mcp.json syntax and path</li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>Available Tools</h2>
+            <ul>
+                <li><code>get_pods</code>: List pods with optional namespace and label filters</li>
+                <li><code>describe_pod</code>: Get detailed pod information</li>
+                <li><code>logs</code>: Retrieve container logs</li>
+                <li><code>get_services</code>: List services in namespaces</li>
+            </ul>
+        </section>
+    </div>
+
+    <script>
+        // Three.js background animation
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Create particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 1000;
+        const positions = new Float32Array(particlesCount * 3);
+
+        for (let i = 0; i < particlesCount * 3; i++) {
+            positions[i] = (Math.random() - 0.5) * 20;
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+        const particlesMaterial = new THREE.PointsMaterial({
+            color: 0x00d4ff,
+            size: 0.02,
+            transparent: true,
+            opacity: 0.6
+        });
+
+        const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particles);
+
+        camera.position.z = 5;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particles.rotation.x += 0.001;
+            particles.rotation.y += 0.002;
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
